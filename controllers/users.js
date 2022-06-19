@@ -1,44 +1,61 @@
+const { json } = require("body-parser");
 const User = require("../models/user");
 const { ERRORS, MESSAGES } = require("../utils/constants");
 
-module.exports.getUsers = (req, res) => {
+module.exports.getUsers = (req, res, next) => {
   User.find({})
-    .then((users) => res.send(users.map(getUserData)))
-    .catch((err) => catchErr(res, err, MESSAGES.userNotFound));
+    .then((users) => {
+      if (!user) next(new UserCastError(MESSAGES.userNotFound));
+      res.send(users.map(formatUserData));
+    })
+    .catch((err) => next(validation(err, MESSAGES.userNotFound)));
 };
 
-module.exports.getUser = (req, res) => {
+module.exports.getUser = (req, res, next) => {
   User.findById(req.params.userId)
-    .then((user) => res.send(getUserData(user)))
-    .catch((err) => catchErr(res, err, MESSAGES.userNotFound));
+    .then((user) => {
+      if (!user) next(new UserCastError(MESSAGES.userNotFound));
+      res.send(formatUserData(user));
+    })
+    .catch((err) => next(validation(err, MESSAGES.userNotFound)));
 };
 
-module.exports.createUser = (req, res) => {
+module.exports.createUser = (req, res, next) => {
   const { name, about, avatar } = req.body;
   User.create({ name, about, avatar })
-    .then((user) => res.send(getUserData(user)))
-    .catch((err) => catchErr(res, err, MESSAGES.errorUserCreate));
+    .then((user) => {
+      if (!user) next(new UserCastError(MESSAGES.userNotFound));
+      res.send(formatUserData(user));
+    })
+    .catch((err) => next(validation(err, MESSAGES.errorUserCreate)));
 };
 
-module.exports.updateProfile = (req, res) => {
+module.exports.updateProfile = (req, res, next) => {
   const { name, about } = req.body;
   User.findByIdAndUpdate(
     req.user._id,
     { name, about },
     { new: true, runValidators: true }
   )
-    .then((user) => res.send(getUserData(user)))
-    .catch((err) => catchErr(res, err, MESSAGES.errorProfileUpdate));
+    .then((user) => {
+      if (!user) next(new UserCastError(MESSAGES.userNotFound));
+      res.send(formatUserData(user));
+    })
+    .catch((err) => next(validation(err, MESSAGES.errorProfileUpdate)));
 };
-module.exports.updateAvatar = (req, res) => {
+
+module.exports.updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
   User.findByIdAndUpdate(
     req.user._id,
     { avatar },
     { new: true, runValidators: true }
   )
-    .then((user) => res.send(getUserData(user)))
-    .catch((err) => catchErr(res, err, MESSAGES.errorAvatarUpdate));
+    .then((user) => {
+      if (!user) next(new UserCastError(MESSAGES.userNotFound));
+      res.send(formatUserData(user));
+    })
+    .catch((err) => next(validation(err, MESSAGES.errorAvatarUpdate)));
 };
 
 const validation = (err, message = err.message) => {
@@ -46,27 +63,20 @@ const validation = (err, message = err.message) => {
     case "ValidationError":
       return new UserValidationError(message);
     case "CastError":
-      return new UserCastError(message);
+      return err.code === 404
+        ? new UserCastError(message)
+        : new UserValidationError(message);
     default:
-      return new ServerError(err.message);
+      return new ServerError(message);
   }
 };
 
-const catchErr = (res, err, msg) => {
-  const { statusCode, message } = validation(err, msg);
-  return res.status(statusCode).send({ message });
-};
-
-const getUserData = (user) => {
-  if (user)
-    return {
-      name: user.name,
-      about: user.about,
-      avatar: user.avatar,
-      _id: user._id,
-    };
-  throw new UserCastError(MESSAGES.userNotFound);
-};
+const formatUserData = ({ name, about, avatar, _id }) => ({
+  name,
+  about,
+  avatar,
+  _id,
+});
 
 class UserCastError extends Error {
   constructor(message) {
