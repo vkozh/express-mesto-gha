@@ -27,7 +27,7 @@ module.exports.setLike = (req, res, next) =>
     { new: true }
   )
     .then((card) => {
-      if (!card) next(new CardCastError(MESSAGES.cardNotFound));
+      if (!card) next(new CardValidationError(MESSAGES.cardNotFound));
       res.send(formatCardData(card));
     })
     .catch((err) => next(validation(err, MESSAGES.errorSetLike)));
@@ -39,7 +39,7 @@ module.exports.deleteLike = (req, res, next) =>
     { new: true }
   )
     .then((card) => {
-      if (!card) next(new CardCastError(MESSAGES.cardNotFound));
+      if (!card) next(new CardValidationError(MESSAGES.cardNotFound));
       res.send(formatCardData(card));
     })
     .catch((err) => next(validation(err, MESSAGES.errorRemoveLike)));
@@ -67,7 +67,9 @@ const validation = (err, message = err.message) => {
     case "ValidationError":
       return new CardValidationError(message);
     case "CastError":
-      return new CardCastError(message);
+      return err.code === 404
+        ? new CardCastError(message)
+        : new CardValidationError(message);
     default:
       return new ServerError(err.message);
   }
