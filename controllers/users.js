@@ -5,7 +5,7 @@ const { ERRORS, MESSAGES } = require("../utils/constants");
 module.exports.getUsers = (req, res, next) => {
   User.find({})
     .then((users) => {
-      if (!user) next(new UserCastError(MESSAGES.userNotFound));
+      if (!users) next(new UserCastError(MESSAGES.userNotFound));
       res.send(users.map(formatUserData));
     })
     .catch((err) => next(validation(err, MESSAGES.userNotFound)));
