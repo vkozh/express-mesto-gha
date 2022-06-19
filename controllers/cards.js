@@ -47,10 +47,10 @@ module.exports.deleteLike = (req, res, next) =>
 module.exports.getCards = (req, res, next) => {
   Card.find({})
     .then((cards) => {
-      if (!card) next(new CardCastError(MESSAGES.cardNotFound));
+      if (!cards) next(new CardCastError(MESSAGES.cardNotFound));
       res.send(cards.map(formatCardData));
     })
-    .catch((err) => catchErr(err, res));
+    .catch((err) => next(validation(err, MESSAGES.cardNotFound)));
 };
 
 module.exports.getCard = (req, res, next) => {
