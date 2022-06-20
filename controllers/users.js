@@ -1,6 +1,52 @@
-const { json } = require("body-parser");
-const User = require("../models/user");
-const { ERRORS, MESSAGES } = require("../utils/constants");
+/* eslint max-classes-per-file: ['error', 3] */
+const User = require('../models/user');
+const { ERRORS, MESSAGES } = require('../utils/constants');
+
+const formatUserData = ({
+  name, about, avatar, _id,
+}) => ({
+  name,
+  about,
+  avatar,
+  _id,
+});
+
+class UserCastError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'UserCastError';
+    this.statusCode = ERRORS.NOT_FOUND;
+  }
+}
+
+class UserValidationError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'UserValidationError';
+    this.statusCode = ERRORS.UNCORRECT;
+  }
+}
+
+class ServerError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'ServerError';
+    this.statusCode = ERRORS.SERVER_ERR;
+  }
+}
+
+const validation = (err, message = err.message) => {
+  switch (err.name) {
+    case 'ValidationError':
+      return new UserValidationError(message);
+    case 'CastError':
+      return err.code === 404
+        ? new UserCastError(message)
+        : new UserValidationError(message);
+    default:
+      return new ServerError(message);
+  }
+};
 
 module.exports.getUsers = (req, res, next) => {
   User.find({})
@@ -35,7 +81,7 @@ module.exports.updateProfile = (req, res, next) => {
   User.findByIdAndUpdate(
     req.user._id,
     { name, about },
-    { new: true, runValidators: true }
+    { new: true, runValidators: true },
   )
     .then((user) => {
       if (!user) next(new UserCastError(MESSAGES.userNotFound));
@@ -49,7 +95,7 @@ module.exports.updateAvatar = (req, res, next) => {
   User.findByIdAndUpdate(
     req.user._id,
     { avatar },
-    { new: true, runValidators: true }
+    { new: true, runValidators: true },
   )
     .then((user) => {
       if (!user) next(new UserCastError(MESSAGES.userNotFound));
@@ -57,47 +103,3 @@ module.exports.updateAvatar = (req, res, next) => {
     })
     .catch((err) => next(validation(err, MESSAGES.errorAvatarUpdate)));
 };
-
-const validation = (err, message = err.message) => {
-  switch (err.name) {
-    case "ValidationError":
-      return new UserValidationError(message);
-    case "CastError":
-      return err.code === 404
-        ? new UserCastError(message)
-        : new UserValidationError(message);
-    default:
-      return new ServerError(message);
-  }
-};
-
-const formatUserData = ({ name, about, avatar, _id }) => ({
-  name,
-  about,
-  avatar,
-  _id,
-});
-
-class UserCastError extends Error {
-  constructor(message) {
-    super(message);
-    this.name = "UserCastError";
-    this.statusCode = ERRORS.NOT_FOUND;
-  }
-}
-
-class UserValidationError extends Error {
-  constructor(message) {
-    super(message);
-    this.name = "UserValidationError";
-    this.statusCode = ERRORS.UNCORRECT;
-  }
-}
-
-class ServerError extends Error {
-  constructor(message) {
-    super(message);
-    this.name = "ServerError";
-    this.statusCode = ERRORS.SERVER_ERR;
-  }
-}
