@@ -59,12 +59,14 @@ module.exports.createCard = (req, res, next) => {
     .catch((err) => next(validation(err, MESSAGES.errorCardCreate)));
 };
 
-module.exports.deleteCard = (req, res, next) => Card.findByIdAndRemove(req.params.cardId)
-  .then((card) => {
-    if (!card) next(new CardCastError(MESSAGES.cardNotFound));
-    res.send(formatCardData(card));
-  })
-  .catch((err) => next(validation(err, MESSAGES.cardNotFound)));
+module.exports.deleteCard = (req, res, next) => {
+  Card.findByIdAndRemove(req.params.cardId)
+    .then((card) => {
+      if (!card || req.user._id !== card.owner) next(new CardCastError(MESSAGES.cardNotFound));
+      res.send(formatCardData(card));
+    })
+    .catch((err) => next(validation(err, MESSAGES.cardNotFound)));
+};
 
 module.exports.setLike = (req, res, next) => Card.findByIdAndUpdate(
   req.params.cardId,

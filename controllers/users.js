@@ -1,4 +1,6 @@
 /* eslint max-classes-per-file: ['error', 3] */
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const { ERRORS, MESSAGES } = require('../utils/constants');
 
@@ -57,23 +59,21 @@ module.exports.getUsers = (req, res, next) => {
     .catch((err) => next(validation(err, MESSAGES.userNotFound)));
 };
 
-module.exports.getUser = (req, res, next) => {
-  User.findById(req.params.userId)
-    .then((user) => {
-      if (!user) next(new UserCastError(MESSAGES.userNotFound));
-      res.send(formatUserData(user));
-    })
-    .catch((err) => next(validation(err, MESSAGES.userNotFound)));
-};
-
 module.exports.createUser = (req, res, next) => {
-  const { name, about, avatar } = req.body;
-  User.create({ name, about, avatar })
-    .then((user) => {
-      if (!user) next(new UserCastError(MESSAGES.userNotFound));
-      res.send(formatUserData(user));
+  const {
+    name, about, avatar, email, password,
+  } = req.body;
+  bcrypt.hash(password, 10).then((hash) => {
+    User.create({
+      name, about, avatar, email, hash,
     })
-    .catch((err) => next(validation(err, MESSAGES.errorUserCreate)));
+      .then((user) => {
+        console.log('createUser, USER:', user);
+        if (!user) next(new UserCastError(MESSAGES.userNotFound));
+        res.send(formatUserData(user));
+      })
+      .catch((err) => next(validation(err, MESSAGES.errorUserCreate)));
+  });
 };
 
 module.exports.updateProfile = (req, res, next) => {
@@ -102,4 +102,33 @@ module.exports.updateAvatar = (req, res, next) => {
       res.send(formatUserData(user));
     })
     .catch((err) => next(validation(err, MESSAGES.errorAvatarUpdate)));
+};
+
+module.exports.login = (req, res, next) => {
+  const { email, password } = req.body;
+  User.findByCredentials(email, password)
+    .then((user) => {
+      if (!user) next(new UserCastError(MESSAGES.userNotFound));
+      const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: '7d' });
+      res.cookie('jwt', token, { maxAge: 3600000 * 24 * 7, httpOnly: true }).end();
+    })
+    .catch((err) => next(validation(err, MESSAGES.wrongUserData)));
+};
+
+module.exports.getProfile = (req, res, next) => {
+  User.findById(req.user._id)
+    .then((user) => {
+      if (!user) next(new UserCastError(MESSAGES.userNotFound));
+      res.send(formatUserData(user));
+    })
+    .catch((err) => next(validation(err, MESSAGES.userNotFound)));
+};
+
+module.exports.getUser = (req, res, next) => {
+  User.findById(req.params.userId)
+    .then((user) => {
+      if (!user) next(new UserCastError(MESSAGES.userNotFound));
+      res.send(formatUserData(user));
+    })
+    .catch((err) => next(validation(err, MESSAGES.userNotFound)));
 };
