@@ -47,7 +47,7 @@ const userSchema = new mongoose.Schema({
     select: false,
   },
 });
-
+// /https?\:\/\/(w{3}\.)?\S+\.\w+(\/\S+)*\#?/g
 userSchema.statics.findByCredentials = (email, password) => {
   this.findOne(email).select('+password').then((user) => {
     // console.log('findByCredentials, USER:', user);
