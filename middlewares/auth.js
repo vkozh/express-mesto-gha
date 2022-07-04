@@ -5,7 +5,7 @@ class AuthValidationError extends Error {
   constructor(message) {
     super(message);
     this.name = 'AuthValidationError';
-    this.statusCode = ERRORS.UNCORRECT;
+    this.statusCode = ERRORS.UNAUTHORIZED;
   }
 }
 
