@@ -29,21 +29,21 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true,
-    validate: {
-      validator(v) {
-        return valid.isEmail(v);
-      },
-    },
+    // validate: {
+    //   validator(v) {
+    //     return valid.isEmail(v);
+    //   },
+    // },
   },
   password: {
     type: String,
     required: true,
     minLength: 8,
-    validate: {
-      validator(v) {
-        return valid.isStrongPassword(v);
-      },
-    },
+    // validate: {
+    //   validator(v) {
+    //     return valid.isStrongPassword(v);
+    //   },
+    // },
     select: false,
   },
 });
