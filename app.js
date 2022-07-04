@@ -7,7 +7,7 @@ const { login, createUser } = require('./controllers/users');
 const auth = require('./middlewares/auth');
 const { MESSAGES } = require('./utils/constants');
 
-const regexp = /https?\\:\/\/(w{3}\.)?\S+\.\w+(\/\S+)*\\#?/g;
+// const regexp = /https?\\:\/\/(w{3}\.)?\S+\.\w+(\/\S+)*\\#?/g;
 
 const { PORT = 3000 } = process.env;
 const app = express();
@@ -25,8 +25,8 @@ app.post('/signup', celebrate(
     body: Joi.object().keys({
       name: Joi.string().min(2).max(30),
       about: Joi.string().min(2).max(30),
-      avatar: Joi.string(),
-      email: Joi.email().required().pattern(new RegExp(regexp)),
+      avatar: Joi.string().pattern(/https?\\:\/\/(w{3}\.)?\S+\.\w+(\/\S+)*\\#?/),
+      email: Joi.string().email().required(),
       password: Joi.string().required(),
     }),
   },
