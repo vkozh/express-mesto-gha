@@ -50,7 +50,7 @@ const userSchema = new mongoose.Schema({
 // /https?\:\/\/(w{3}\.)?\S+\.\w+(\/\S+)*\#?/g
 userSchema.statics.findByCredentials = (email, password) => {
   this.findOne(email).select('+password').then((user) => {
-    // console.log('findByCredentials, USER:', user);
+    console.log('findByCredentials, USER:', user);
     if (!user) Promise.reject(new Error(MESSAGES.wrongUserData));
     return bcrypt
       .compare(password, user.password)
