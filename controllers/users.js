@@ -5,12 +5,14 @@ const User = require('../models/user');
 const { ERRORS, MESSAGES } = require('../utils/constants');
 
 const formatUserData = ({
-  name, about, avatar, _id,
+  name, about, avatar, email,
+  // _id,
 }) => ({
   name,
   about,
   avatar,
-  _id,
+  email,
+  // _id,
 });
 
 class UserCastError extends Error {
@@ -65,7 +67,7 @@ module.exports.createUser = (req, res, next) => {
   } = req.body;
   bcrypt.hash(password, 10).then((hash) => {
     User.create({
-      name, about, avatar, email, hash,
+      name, about, avatar, email, password: hash,
     })
       .then((user) => {
         console.log('createUser, USER:', user);

@@ -32,16 +32,15 @@ app.post('/signup', celebrate(
   },
 ), createUser);
 app.use(errors());
-app.use(auth);
-app.use('/users', require('./routes/users'));
-app.use('/cards', require('./routes/cards'));
+app.use('/users', auth, require('./routes/users'));
+app.use('/cards', auth, require('./routes/cards'));
 
+app.use((req, res) => res.status(404).send({ message: MESSAGES.wrongPath }));
 app.use((err, req, res, next) => {
   const { statusCode, message } = err;
   res.status(statusCode).send({ message });
   next();
 });
-app.use((req, res) => res.status(404).send({ message: MESSAGES.wrongPath }));
 
 app.listen(PORT, () => {
   console.log(`App listening on port ${PORT}`);
