@@ -1,4 +1,4 @@
-/* eslint max-classes-per-file: ['error', 3] */
+/* eslint max-classes-per-file: ['error', 4] */
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
@@ -39,7 +39,16 @@ class ServerError extends Error {
   }
 }
 
+class ConflictError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'ConflictError';
+    this.statusCode = ERRORS.CONFLICT;
+  }
+}
+
 const validation = (err, message = err.message) => {
+  if (err.code === 11000) return new ConflictError(MESSAGES.alreadyExist);
   switch (err.name) {
     case 'ValidationError':
       return new UserValidationError(message);
@@ -66,15 +75,21 @@ module.exports.createUser = (req, res, next) => {
     name, about, avatar, email, password,
   } = req.body;
   bcrypt.hash(password, 10).then((hash) => {
-    User.create({
-      name, about, avatar, email, password: hash,
-    })
-      .then((user) => {
-        console.log('createUser, USER:', user);
-        if (!user) next(new UserCastError(MESSAGES.userNotFound));
-        res.send(formatUserData(user));
+    User.init().then(async () => {
+      // try {
+      await User.create({
+        name, about, avatar, email, password: hash,
       })
-      .catch((err) => next(validation(err, MESSAGES.errorUserCreate)));
+        .then((user) => {
+          if (!user) next(new UserCastError(MESSAGES.userNotFound));
+          res.send(formatUserData(user));
+        })
+        .catch((err) => next(validation(err, MESSAGES.errorUserCreate)));
+      // } catch (error) {
+      //   if (error.code === 11000) res.status(409).send();
+      //   next(error);
+      // }
+    }).catch((err) => next(validation(err, MESSAGES.errorUserCreate)));
   });
 };
 

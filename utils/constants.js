@@ -2,6 +2,7 @@ module.exports.ERRORS = {
   UNCORRECT: 400,
   UNAUTHORIZED: 401,
   NOT_FOUND: 404,
+  CONFLICT: 409,
   SERVER_ERR: 500,
 };
 
@@ -15,6 +16,7 @@ module.exports.MESSAGES = {
   errorRemoveLike: 'Переданы некорректные данные для снятия лайка.',
   errorCardCreate: 'Переданы некорректные данные при создании карточки.',
   wrongPath: 'Такого пути не существует.',
-  wrongUserData: 'Неправильные почта или пароль',
-  needAuth: 'Необходима авторизация',
+  wrongUserData: 'Неправильные почта или пароль.',
+  needAuth: 'Необходима авторизация.',
+  alreadyExist: 'Пользователь с таким email уже существует.',
 };
