@@ -2,7 +2,9 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
-const { celebrate, Joi, isCelebrateError } = require('celebrate');
+const {
+  celebrate, Joi, errors, isCelebrateError,
+} = require('celebrate');
 const { login, createUser } = require('./controllers/users');
 const auth = require('./middlewares/auth');
 const { MESSAGES, ERRORS } = require('./utils/constants');
@@ -41,7 +43,7 @@ app.post('/signup', celebrate(
     }),
   },
 ), createUser);
-// app.use(errors());
+app.use(errors());
 app.use('/users', auth, require('./routes/users'));
 app.use('/cards', auth, require('./routes/cards'));
 
@@ -51,14 +53,8 @@ app.use((err, req, res, next) => {
     //   //Авторизация с несуществующими email и password в БД
     const errorBody = err.details.get('body');
     const { details: [errorDetails] } = errorBody;
-    console.log(err);
-    //   // console.log(err.statusCode)
     res.status(ERRORS.UNAUTHORIZED).send({ message: errorDetails.message });
-    //   // err.details.set()
-    //   next();
   }
-  // console.log('app, error', err);
-  // if (err.code === 11000) res.status(409).send({ message: ERRORS.alreadeExist });
   const { statusCode, message } = err;
   res.status(statusCode).send({ message });
   next();
