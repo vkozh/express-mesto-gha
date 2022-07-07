@@ -3,11 +3,11 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const {
-  celebrate, Joi, errors, isCelebrateError,
+  celebrate, Joi, errors,
 } = require('celebrate');
 const { login, createUser } = require('./controllers/users');
 const auth = require('./middlewares/auth');
-const { MESSAGES, ERRORS } = require('./utils/constants');
+const { MESSAGES } = require('./utils/constants');
 
 const { PORT = 3000 } = process.env;
 const app = express();
