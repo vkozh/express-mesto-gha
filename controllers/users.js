@@ -98,8 +98,8 @@ module.exports.createUser = (req, res, next) => {
           name, about, avatar, email, password: hash,
         });
       } catch (err) {
-        console.log(err)
-        next(validation(err, MESSAGES.errorUserCreate));
+        console.log(err);
+        return next(validation(err, MESSAGES.errorUserCreate));
       }
     }).then((user) => {
       if (!user) next(new UserCastError(MESSAGES.userNotFound));
