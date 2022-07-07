@@ -9,8 +9,6 @@ const { login, createUser } = require('./controllers/users');
 const auth = require('./middlewares/auth');
 const { MESSAGES, ERRORS } = require('./utils/constants');
 
-// const regexp = /https?\\:\/\/(w{3}\.)?\S+\.\w+(\/\S+)*\\#?/g;
-
 const { PORT = 3000 } = process.env;
 const app = express();
 
@@ -24,11 +22,6 @@ app.use(cookieParser());
 app.post('/signin', celebrate({
   body: Joi.object().keys({
     email: Joi.string().required().email(),
-    // .error((err) => {
-    //   const celErr = new CelebrateError(err);
-    //   celErr.statusCode = 401;
-    //   return celErr;
-    // }),
     password: Joi.string().required().min(8),
   }),
 }), login);
@@ -49,13 +42,14 @@ app.use('/cards', auth, require('./routes/cards'));
 
 app.use((req, res) => res.status(404).send({ message: MESSAGES.wrongPath }));
 app.use((err, req, res, next) => {
-  if (isCelebrateError(err)) {
-    //   //Авторизация с несуществующими email и password в БД
-    const errorBody = err.details.get('body');
-    const { details: [errorDetails] } = errorBody;
-    res.status(ERRORS.UNAUTHORIZED).send({ message: errorDetails.message });
-  }
   const { statusCode, message } = err;
+  // if (isCelebrateError(err)) {
+  //   // Авторизация с несуществующими email и password в БД
+  //   const errorBody = err.details.get('body');
+  //   const { details: [errorDetails] } = errorBody;
+  //   statusCode = ERRORS.UNAUTHORIZED;
+  //   message = errorDetails.message;
+  // }
   res.status(statusCode).send({ message });
   next();
 });

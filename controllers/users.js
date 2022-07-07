@@ -1,4 +1,4 @@
-/* eslint max-classes-per-file: ['error', 4] */
+/* eslint max-classes-per-file: ['error', 5] */
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
@@ -47,7 +47,16 @@ class ConflictError extends Error {
   }
 }
 
+class AuthError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'ConflictError';
+    this.statusCode = ERRORS.UNAUTHORIZED;
+  }
+}
+
 const validation = (err, message = err.message) => {
+  console.log('validation', err.name);
   switch (err.name) {
     case 'ValidationError':
       return new UserValidationError(message);
@@ -57,6 +66,8 @@ const validation = (err, message = err.message) => {
         : new UserValidationError(message);
     case 'MongoServerError':
       return new ConflictError(MESSAGES.alreadyExist);
+    case 'TypeError':
+      return new AuthError(message);
     default:
       return new ServerError(message);
   }
