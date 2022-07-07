@@ -48,7 +48,6 @@ class ConflictError extends Error {
 }
 
 const validation = (err, message = err.message) => {
-  if (err.code === 11000) return new ConflictError(MESSAGES.alreadyExist);
   switch (err.name) {
     case 'ValidationError':
       return new UserValidationError(message);
@@ -56,6 +55,8 @@ const validation = (err, message = err.message) => {
       return err.code === 404
         ? new UserCastError(message)
         : new UserValidationError(message);
+    case 'MongoServerError':
+      return new ConflictError(MESSAGES.alreadyExist);
     default:
       return new ServerError(message);
   }
@@ -75,21 +76,36 @@ module.exports.createUser = (req, res, next) => {
     name, about, avatar, email, password,
   } = req.body;
   bcrypt.hash(password, 10).then((hash) => {
-    User.init().then(async () => {
-      // try {
-      await User.create({
-        name, about, avatar, email, password: hash,
-      })
-        .then((user) => {
-          if (!user) next(new UserCastError(MESSAGES.userNotFound));
-          res.send(formatUserData(user));
-        })
-        .catch((err) => next(validation(err, MESSAGES.errorUserCreate)));
-      // } catch (error) {
-      //   if (error.code === 11000) res.status(409).send();
-      //   next(error);
-      // }
-    }).catch((err) => next(validation(err, MESSAGES.errorUserCreate)));
+    // User.init().then(async () => {
+    //   // try {
+    //   await User.create({
+    //     name, about, avatar, email, password: hash,
+    //   })
+    //     .then((user) => {
+    //       if (!user) next(new UserCastError(MESSAGES.userNotFound));
+    //       res.send(formatUserData(user));
+    //     })
+    //     .catch((err) => next(validation(err, MESSAGES.errorUserCreate)));
+    //   // } catch (error) {
+    //   //   if (error.code === 11000) res.status(409).send();
+    //   //   next(error);
+    //   // }
+    // }).catch((err) => next(validation(err, MESSAGES.errorUserCreate)));
+
+    User.init().then(() => {
+      try {
+        return User.create({
+          name, about, avatar, email, password: hash,
+        });
+      } catch (err) {
+        console.log(err)
+        next(validation(err, MESSAGES.errorUserCreate));
+      }
+    }).then((user) => {
+      if (!user) next(new UserCastError(MESSAGES.userNotFound));
+      return res.send(formatUserData(user));
+    })
+      .catch((err) => next(validation(err, MESSAGES.errorUserCreate)));
   });
 };
 

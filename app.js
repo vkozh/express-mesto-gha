@@ -2,7 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
-const { celebrate, Joi, errors, isCelebrateError } = require('celebrate');
+const { celebrate, Joi, errors, isCelebrateError, CelebrateError } = require('celebrate');
 const { login, createUser } = require('./controllers/users');
 const auth = require('./middlewares/auth');
 const { MESSAGES, ERRORS } = require('./utils/constants');
@@ -22,6 +22,11 @@ app.use(cookieParser());
 app.post('/signin', celebrate({
   body: Joi.object().keys({
     email: Joi.string().required().email(),
+    // .error((err) => {
+    //   const celErr = new CelebrateError(err);
+    //   celErr.statusCode = 401;
+    //   return celErr;
+    // }),
     password: Joi.string().required().min(8),
   }),
 }), login);
@@ -43,9 +48,17 @@ app.use('/cards', auth, require('./routes/cards'));
 app.use((req, res) => res.status(404).send({ message: MESSAGES.wrongPath }));
 app.use((err, req, res, next) => {
   if (isCelebrateError(err)) {
-    const body = err.details.get('body');
-    res.status(ERRORS.UNAUTHORIZED).send({ message: body.message });
+    //   //Авторизация с несуществующими email и password в БД
+    const errorBody = err.details.get('body');
+    const { details: [errorDetails] } = errorBody;
+    console.log(err);
+    //   // console.log(err.statusCode)
+    res.status(ERRORS.UNAUTHORIZED).send({ message: errorDetails.message });
+    //   // err.details.set()
+    //   next();
   }
+  // console.log('app, error', err);
+  // if (err.code === 11000) res.status(409).send({ message: ERRORS.alreadeExist });
   const { statusCode, message } = err;
   res.status(statusCode).send({ message });
   next();
