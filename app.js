@@ -29,6 +29,7 @@ app.post('/signin', celebrate({
 
   }),
 }), login);
+
 app.post('/signup', celebrate(
   {
     body: Joi.object().keys({
@@ -40,6 +41,7 @@ app.post('/signup', celebrate(
     }),
   },
 ), createUser);
+
 app.use('/users', auth, require('./routes/users'));
 app.use('/cards', auth, require('./routes/cards'));
 

@@ -184,5 +184,5 @@ module.exports.getUser = (req, res, next) => {
       if (!user) next(new UserCastError(MESSAGES.userNotFound));
       res.send(formatUserData(user));
     })
-    .catch((err) => next(validation(err, MESSAGES.userNotFound)));
+  // .catch((err) => next(validation(err, MESSAGES.userNotFound)));
 };

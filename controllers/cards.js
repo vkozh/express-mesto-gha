@@ -70,9 +70,9 @@ module.exports.createCard = (req, res, next) => {
 module.exports.deleteCard = (req, res, next) => {
   Card.findByIdAndRemove(req.params.cardId)
     .then((card) => {
-      if (!card) next(new CardCastError(MESSAGES.cardNotFound));
+      // if (!card) next(new CardCastError(MESSAGES.cardNotFound));
       if (req.user._id !== card.owner) next(new AuthError(MESSAGES.needAuth));
-      // res.send(formatCardData(card));
+      res.send();
     })
     .catch((err) => next(validation(err, MESSAGES.cardNotFound)));
 };
