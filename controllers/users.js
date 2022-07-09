@@ -56,7 +56,6 @@ class AuthError extends Error {
 }
 
 const validation = (err, message = err.message) => {
-  console.log('validation', err);
   switch (err.name) {
     case 'ValidationError':
       return new UserValidationError(message);

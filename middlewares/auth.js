@@ -14,12 +14,10 @@ module.exports = (req, res, next) => {
 
   if (!token) next(new AuthValidationError(MESSAGES.needAuth));
   // if (token.startsWith('Bearer ')) token = token.replace('Bearer ', '');
-  let payload;
   try {
-    payload = checkToken(token);
+    req.user = checkToken(token);
+    next();
   } catch (err) {
     next(new AuthValidationError(MESSAGES.needAuth));
   }
-  req.user = payload;
-  next();
 };
