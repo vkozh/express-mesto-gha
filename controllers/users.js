@@ -6,13 +6,13 @@ const { ERRORS, MESSAGES } = require('../utils/constants');
 
 const formatUserData = ({
   name, about, avatar, email,
-  // _id,
+  _id,
 }) => ({
   name,
   about,
   avatar,
   email,
-  // _id,
+  _id,
 });
 
 class UserCastError extends Error {
