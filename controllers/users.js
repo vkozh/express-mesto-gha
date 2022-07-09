@@ -1,6 +1,6 @@
 /* eslint max-classes-per-file: ['error', 5] */
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
+const { createToken } = require('../helpers/jwt');
 const User = require('../models/user');
 const { ERRORS, MESSAGES } = require('../utils/constants');
 
@@ -50,13 +50,13 @@ class ConflictError extends Error {
 class AuthError extends Error {
   constructor(message) {
     super(message);
-    this.name = 'ConflictError';
+    this.name = 'AuthError';
     this.statusCode = ERRORS.UNAUTHORIZED;
   }
 }
 
 const validation = (err, message = err.message) => {
-  console.log('validation', err.name);
+  console.log('validation', err);
   switch (err.name) {
     case 'ValidationError':
       return new UserValidationError(message);
@@ -74,7 +74,8 @@ const validation = (err, message = err.message) => {
 };
 
 module.exports.getUsers = (req, res, next) => {
-  User.find({})
+  User
+    .find({})
     .then((users) => {
       if (!users) next(new UserCastError(MESSAGES.userNotFound));
       res.send(users.map(formatUserData));
@@ -86,47 +87,51 @@ module.exports.createUser = (req, res, next) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
-  bcrypt.hash(password, 10).then((hash) => {
-    // User.init().then(async () => {
-    //   // try {
-    //   await User.create({
-    //     name, about, avatar, email, password: hash,
-    //   })
-    //     .then((user) => {
-    //       if (!user) next(new UserCastError(MESSAGES.userNotFound));
-    //       res.send(formatUserData(user));
-    //     })
-    //     .catch((err) => next(validation(err, MESSAGES.errorUserCreate)));
-    //   // } catch (error) {
-    //   //   if (error.code === 11000) res.status(409).send();
-    //   //   next(error);
-    //   // }
-    // }).catch((err) => next(validation(err, MESSAGES.errorUserCreate)));
-
-    User.init().then(() => {
-      try {
-        return User.create({
-          name, about, avatar, email, password: hash,
-        });
-      } catch (err) {
-        console.log(err);
-        return next(validation(err, MESSAGES.errorUserCreate));
-      }
-    }).then((user) => {
-      if (!user) next(new UserCastError(MESSAGES.userNotFound));
-      return res.send(formatUserData(user));
-    })
-      .catch((err) => next(validation(err, MESSAGES.errorUserCreate)));
-  });
+  bcrypt
+    .hash(password, 10)
+    .then((hash) => {
+      // User.init().then(async () => {
+      //   // try {
+      //   await User.create({
+      //     name, about, avatar, email, password: hash,
+      //   })
+      //     .then((user) => {
+      //       if (!user) next(new UserCastError(MESSAGES.userNotFound));
+      //       res.send(formatUserData(user));
+      //     })
+      //     .catch((err) => next(validation(err, MESSAGES.errorUserCreate)));
+      //   // } catch (error) {
+      //   //   if (error.code === 11000) res.status(409).send();
+      //   //   next(error);
+      //   // }
+      // }).catch((err) => next(validation(err, MESSAGES.errorUserCreate)));
+      User
+        .init()
+        .then(() => {
+          try {
+            return User.create({
+              name, about, avatar, email, password: hash,
+            });
+          } catch (err) {
+            return next(validation(err, MESSAGES.errorUserCreate));
+          }
+        })
+        .then((user) => {
+          if (!user) next(new UserCastError(MESSAGES.userNotFound));
+          return res.send(formatUserData(user));
+        })
+        .catch((err) => next(validation(err, MESSAGES.errorUserCreate)));
+    });
 };
 
 module.exports.updateProfile = (req, res, next) => {
   const { name, about } = req.body;
-  User.findByIdAndUpdate(
-    req.user._id,
-    { name, about },
-    { new: true, runValidators: true },
-  )
+  User
+    .findByIdAndUpdate(
+      req.user._id,
+      { name, about },
+      { new: true, runValidators: true },
+    )
     .then((user) => {
       if (!user) next(new UserCastError(MESSAGES.userNotFound));
       res.send(formatUserData(user));
@@ -136,11 +141,12 @@ module.exports.updateProfile = (req, res, next) => {
 
 module.exports.updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
-  User.findByIdAndUpdate(
-    req.user._id,
-    { avatar },
-    { new: true, runValidators: true },
-  )
+  User
+    .findByIdAndUpdate(
+      req.user._id,
+      { avatar },
+      { new: true, runValidators: true },
+    )
     .then((user) => {
       if (!user) next(new UserCastError(MESSAGES.userNotFound));
       res.send(formatUserData(user));
@@ -150,17 +156,21 @@ module.exports.updateAvatar = (req, res, next) => {
 
 module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
-  User.findByCredentials(email, password)
+  User
+    .findByCredentials(email, password)
     .then((user) => {
       if (!user) next(new UserCastError(MESSAGES.userNotFound));
-      const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: '7d' });
-      res.cookie('jwt', token, { maxAge: 3600000 * 24 * 7, httpOnly: true }).end();
+      const token = createToken({ _id: user._id });
+      res
+        .cookie('jwt', token, { maxAge: 3600000 * 24 * 7, httpOnly: true })
+        .send(formatUserData(user)).end();
     })
     .catch((err) => next(validation(err, MESSAGES.wrongUserData)));
 };
 
 module.exports.getProfile = (req, res, next) => {
-  User.findById(req.user._id)
+  User
+    .findById(req.user._id)
     .then((user) => {
       if (!user) next(new UserCastError(MESSAGES.userNotFound));
       res.send(formatUserData(user));
@@ -169,7 +179,8 @@ module.exports.getProfile = (req, res, next) => {
 };
 
 module.exports.getUser = (req, res, next) => {
-  User.findById(req.params.userId)
+  User
+    .findById(req.user._id)
     .then((user) => {
       if (!user) next(new UserCastError(MESSAGES.userNotFound));
       res.send(formatUserData(user));

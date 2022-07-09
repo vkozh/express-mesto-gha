@@ -1,4 +1,4 @@
-const jwt = require('jsonwebtoken');
+const { checkToken } = require('../helpers/jwt');
 const { MESSAGES, ERRORS } = require('../utils/constants');
 
 class AuthValidationError extends Error {
@@ -11,13 +11,14 @@ class AuthValidationError extends Error {
 
 module.exports = (req, res, next) => {
   let token = req.cookies.jwt;
-  if (!token || token.startsWith('Bearer ')) next(new AuthValidationError(MESSAGES.needAuth));
-  token = token.replace('Bearer ', '');
+
+  if (!token) next(new AuthValidationError(MESSAGES.needAuth));
+  if (token.startsWith('Bearer ')) token = token.replace('Bearer ', '');
   let payload;
   try {
-    payload = jwt.verify(token, 'some-secret-key');
+    payload = checkToken(token);
   } catch (err) {
-    next(new Error(MESSAGES.needAuth));
+    next(new AuthValidationError(MESSAGES.needAuth));
   }
   req.user = payload;
   next();

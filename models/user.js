@@ -38,7 +38,6 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: true,
-    minLength: 8,
     // validate: {
     //   validator(v) {
     //     return valid.isStrongPassword(v);
@@ -49,16 +48,19 @@ const userSchema = new mongoose.Schema({
 });
 // /https?\:\/\/(w{3}\.)?\S+\.\w+(\/\S+)*\#?/g
 userSchema.statics.findByCredentials = function (email, password) {
-  return this.findOne({ email }).select('+password').then((user) => {
-    console.log('findByCredentials, USER:', user);
-    if (!user) Promise.reject(new Error(MESSAGES.wrongUserData));
-    return bcrypt
-      .compare(password, user.password)
-      .then((matched) => {
-        if (!matched) Promise.reject(new Error(MESSAGES.wrongUserData));
-        return user;
-      });
-  });
+  return this
+    .findOne({ email })
+    .select('+password')
+    .then((user) => {
+      console.log('findByCredentials, USER:', user);
+      if (!user) Promise.reject(new Error(MESSAGES.wrongUserData));
+      return bcrypt
+        .compare(password, user.password)
+        .then((matched) => {
+          if (!matched) Promise.reject(new Error(MESSAGES.wrongUserData));
+          return user;
+        });
+    });
 };
 
 module.exports = mongoose.model('user', userSchema);
