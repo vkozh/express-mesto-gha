@@ -23,12 +23,6 @@ app.use(errors());
 app.use((req, res) => res.status(404).send({ message: MESSAGES.wrongPath }));
 app.use((err, req, res, next) => {
   const { statusCode, message } = err;
-  // if (isCelebrateError(err)) {
-  //   const errorBody = err.details.get('body');
-  //   const { details: [errorDetails] } = errorBody;
-  //   statusCode = ERRORS.UNAUTHORIZED;
-  //   message = errorDetails.message;
-  // }
   res.status(statusCode).send({ message });
   next();
 });
