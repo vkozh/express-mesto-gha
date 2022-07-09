@@ -118,7 +118,7 @@ module.exports.checkOwner = (req, res, next) => {
   Card.findById(req.params.cardId)
     .then((card) => {
       if (!card) next(new CardCastError(MESSAGES.cardNotFound));
-      if (req.user._id !== card.owner) next(new AuthError(MESSAGES.needAuth));
+      if (req.params._id !== card.owner) next(new AuthError(MESSAGES.needAuth));
       next();
     })
     .catch((err) => next(validation(err, MESSAGES.cardNotFound)));
