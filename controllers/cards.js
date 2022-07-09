@@ -1,4 +1,4 @@
-/* eslint max-classes-per-file: ['error', 3] */
+/* eslint max-classes-per-file: ['error', 4] */
 const Card = require('../models/card');
 const { ERRORS, MESSAGES } = require('../utils/constants');
 
@@ -25,6 +25,14 @@ class CardValidationError extends Error {
     super(message);
     this.name = 'CardValidationError';
     this.statusCode = ERRORS.UNCORRECT;
+  }
+}
+
+class AuthError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'AuthError';
+    this.statusCode = ERRORS.UNAUTHORIZED;
   }
 }
 
@@ -62,8 +70,8 @@ module.exports.createCard = (req, res, next) => {
 module.exports.deleteCard = (req, res, next) => {
   Card.findByIdAndRemove(req.params.cardId)
     .then((card) => {
-      if (!card || req.user._id !== card.owner) next(new CardCastError(MESSAGES.cardNotFound));
-      res.send(formatCardData(card));
+      if (req.user._id !== card.owner) next(new AuthError(MESSAGES.needAuth));
+      // res.send(formatCardData(card));
     })
     .catch((err) => next(validation(err, MESSAGES.cardNotFound)));
 };

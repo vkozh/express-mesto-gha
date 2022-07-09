@@ -13,7 +13,7 @@ router.get('/me', getProfile);
 
 router.get('/:userId', celebrate({
   params: Joi.object().keys({
-    userId: Joi.number(),
+    userId: Joi.string().alphanum().length(24),
   }),
 }), getUser);
 
@@ -25,6 +25,7 @@ router.patch('/me', celebrate(
     }),
   },
 ), updateProfile);
+
 router.patch('/me/avatar', celebrate(
   {
     body: Joi.object().keys({
