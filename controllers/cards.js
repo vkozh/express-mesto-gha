@@ -70,9 +70,7 @@ module.exports.createCard = (req, res, next) => {
 module.exports.deleteCard = (req, res, next) => {
   Card.findByIdAndRemove(req.params.cardId)
     .then((card) => {
-      // if (!card) next(new CardCastError(MESSAGES.cardNotFound));
-      if (req.user._id !== card.owner) next(new AuthError(MESSAGES.needAuth));
-      res.send();
+      if (!card) res.send({ message: 'success' });
     })
     .catch((err) => next(validation(err, MESSAGES.cardNotFound)));
 };
@@ -111,8 +109,17 @@ module.exports.getCards = (req, res, next) => {
 module.exports.getCard = (req, res, next) => {
   Card.findById(req.params.cardId)
     .then((card) => {
-      if (!card) next(new CardCastError(MESSAGES.cardNotFound));
       res.send(formatCardData(card));
+    })
+    .catch((err) => next(validation(err, MESSAGES.cardNotFound)));
+};
+
+module.exports.checkOwner = (req, res, next) => {
+  Card.findById(req.params.cardId)
+    .then((card) => {
+      if (!card) next(new CardCastError(MESSAGES.cardNotFound));
+      if (req.user._id !== card.owner) next(new AuthError(MESSAGES.needAuth));
+      next();
     })
     .catch((err) => next(validation(err, MESSAGES.cardNotFound)));
 };

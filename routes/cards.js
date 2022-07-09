@@ -7,6 +7,7 @@ const {
   setLike,
   deleteLike,
   getCard,
+  checkOwner,
 } = require('../controllers/cards');
 
 router.get('/', getCards);
@@ -17,6 +18,12 @@ router.post('/', celebrate({
     link: Joi.string().required().pattern(/https?:\/\/(w{3}\.)?\S+\.\w+(\/\S+)*#?/),
   }),
 }), createCard);
+
+router.delete('/:cardId', celebrate({
+  params: Joi.object().keys({
+    cardId: Joi.string().alphanum().length(24),
+  }),
+}), checkOwner);
 
 router.delete('/:cardId', celebrate({
   params: Joi.object().keys({
