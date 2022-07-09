@@ -89,21 +89,6 @@ module.exports.createUser = (req, res, next) => {
   bcrypt
     .hash(password, 10)
     .then((hash) => {
-      // User.init().then(async () => {
-      //   // try {
-      //   await User.create({
-      //     name, about, avatar, email, password: hash,
-      //   })
-      //     .then((user) => {
-      //       if (!user) next(new UserCastError(MESSAGES.userNotFound));
-      //       res.send(formatUserData(user));
-      //     })
-      //     .catch((err) => next(validation(err, MESSAGES.errorUserCreate)));
-      //   // } catch (error) {
-      //   //   if (error.code === 11000) res.status(409).send();
-      //   //   next(error);
-      //   // }
-      // }).catch((err) => next(validation(err, MESSAGES.errorUserCreate)));
       User
         .init()
         .then(() => {
