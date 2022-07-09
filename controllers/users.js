@@ -180,7 +180,7 @@ module.exports.getProfile = (req, res, next) => {
 
 module.exports.getUser = (req, res, next) => {
   User
-    .findById(req.user._id)
+    .findById(req.params.userId)
     .then((user) => {
       if (!user) next(new UserCastError(MESSAGES.userNotFound));
       res.send(formatUserData(user));

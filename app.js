@@ -23,6 +23,10 @@ app.post('/signin', celebrate({
   body: Joi.object().keys({
     email: Joi.string().required().email(),
     password: Joi.string().required(),
+    name: Joi.string().min(2).max(30),
+    about: Joi.string().min(2).max(30),
+    avatar: Joi.string().pattern(/https?:\/\/(w{3}\.)?\S+\.\w+(\/\S+)*#?/),
+
   }),
 }), login);
 app.post('/signup', celebrate(
@@ -42,10 +46,8 @@ app.use('/cards', auth, require('./routes/cards'));
 
 app.use((req, res) => res.status(404).send({ message: MESSAGES.wrongPath }));
 app.use((err, req, res, next) => {
-  console.log(err);
   let { statusCode, message } = err;
   if (isCelebrateError(err)) {
-    //   // Авторизация с несуществующими email и password в БД
     const errorBody = err.details.get('body');
     const { details: [errorDetails] } = errorBody;
     statusCode = ERRORS.UNAUTHORIZED;

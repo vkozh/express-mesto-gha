@@ -10,10 +10,10 @@ class AuthValidationError extends Error {
 }
 
 module.exports = (req, res, next) => {
-  let token = req.cookies.jwt;
+  const token = req.cookies.jwt;
 
   if (!token) next(new AuthValidationError(MESSAGES.needAuth));
-  if (token.startsWith('Bearer ')) token = token.replace('Bearer ', '');
+  // if (token.startsWith('Bearer ')) token = token.replace('Bearer ', '');
   let payload;
   try {
     payload = checkToken(token);
