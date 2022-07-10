@@ -10,37 +10,30 @@ const {
   checkOwner,
 } = require('../controllers/cards');
 
-router.get('/', getCards);
-router.get('/:cardId', getCard);
-router.post('/', celebrate({
+const validCardId = {
+  params: Joi.object().keys({
+    cardId: Joi.string().pattern(/^[a-f\d]{24}$/i),
+  }),
+};
+
+const validCard = {
   body: Joi.object().keys({
     name: Joi.string().required().min(2).max(30),
     link: Joi.string().required().pattern(/https?:\/\/(w{3}\.)?\S+\.\w+(\/\S+)*#?/),
   }),
-}), createCard);
+};
 
-router.delete('/:cardId', celebrate({
-  params: Joi.object().keys({
-    cardId: Joi.string().alphanum().length(24),
-  }),
-}), checkOwner);
+router.get('/', getCards);
 
-router.delete('/:cardId', celebrate({
-  params: Joi.object().keys({
-    cardId: Joi.string().alphanum().length(24),
-  }),
-}), deleteCard);
+router.get('/:cardId', celebrate(validCardId), getCard);
 
-router.put('/:cardId/likes', celebrate({
-  params: Joi.object().keys({
-    cardId: Joi.string().alphanum().length(24),
-  }),
-}), setLike);
+router.post('/', celebrate(validCard), createCard);
 
-router.delete('/:cardId/likes', celebrate({
-  params: Joi.object().keys({
-    cardId: Joi.string().alphanum().length(24),
-  }),
-}), deleteLike);
+router.delete('/:cardId', celebrate(validCardId), checkOwner);
+router.delete('/:cardId', celebrate(validCardId), deleteCard);
+
+router.delete('/:cardId/likes', celebrate(validCardId), deleteLike);
+
+router.put('/:cardId/likes', celebrate(validCardId), setLike);
 
 module.exports = router;

@@ -1,7 +1,15 @@
 const mongoose = require('mongoose');
 const valid = require('validator');
 const bcrypt = require('bcryptjs');
-const { MESSAGES } = require('../utils/constants');
+const { MESSAGES, ERRORS } = require('../utils/constants');
+
+class UserValidationError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'UserValidationError';
+    this.statusCode = ERRORS.UNCORRECT;
+  }
+}
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -18,46 +26,36 @@ const userSchema = new mongoose.Schema({
   },
   avatar: {
     type: String,
-    validate: {
-      validator(v) {
-        return valid.isURL(v);
-      },
-    },
+    match: [/https?:\/\/(w{3}\.)?\S+\.\w+(\/\S+)*#?/, MESSAGES.invalidURL],
     default: 'https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png',
   },
   email: {
-    unique: true,
     type: String,
+    unique: true,
     required: true,
-    // validate: {
-    //   validator(v) {
-    //     return valid.isEmail(v);
-    //   },
-    // },
+    validate: {
+      validator(v) {
+        return valid.isEmail(v);
+      },
+    },
   },
   password: {
     type: String,
-    required: true,
-    // validate: {
-    //   validator(v) {
-    //     return valid.isStrongPassword(v);
-    //   },
-    // },
     select: false,
+    required: true,
   },
 });
-// /https?\:\/\/(w{3}\.)?\S+\.\w+(\/\S+)*\#?/g
+
 userSchema.statics.findByCredentials = function (email, password) {
   return this
     .findOne({ email })
     .select('+password')
     .then((user) => {
-      console.log('findByCredentials, USER:', user);
-      if (!user) Promise.reject(new Error(MESSAGES.wrongUserData));
+      if (!user) Promise.reject(new UserValidationError(MESSAGES.wrongUserData));
       return bcrypt
         .compare(password, user.password)
         .then((matched) => {
-          if (!matched) Promise.reject(new Error(MESSAGES.wrongUserData));
+          if (!matched) Promise.reject(new UserValidationError(MESSAGES.wrongUserData));
           return user;
         });
     });

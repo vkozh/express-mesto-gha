@@ -1,10 +1,18 @@
 const mongoose = require('mongoose');
+const { MESSAGES } = require('../utils/constants');
 
 const cardSchema = new mongoose.Schema({
   name: {
-    type: String, required: true, minlength: 2, maxlength: 30,
+    type: String,
+    minlength: 2,
+    maxlength: 30,
+    required: true,
   },
-  link: { type: String, required: true },
+  link: {
+    type: String,
+    match: [/https?:\/\/(w{3}\.)?\S+\.\w+(\/\S+)*#?/, MESSAGES.invalidURL],
+    required: true,
+  },
   owner: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'user',
@@ -12,9 +20,9 @@ const cardSchema = new mongoose.Schema({
   },
   likes: [
     {
-      default: [],
       type: mongoose.Schema.Types.ObjectId,
       ref: 'user',
+      default: [],
     },
   ],
   createsAt: {

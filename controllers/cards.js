@@ -1,4 +1,5 @@
 /* eslint max-classes-per-file: ['error', 4] */
+const CardAuthError = require('../classes/errors');
 const Card = require('../models/card');
 const { ERRORS, MESSAGES } = require('../utils/constants');
 
@@ -20,52 +21,37 @@ class CardCastError extends Error {
   }
 }
 
-class CardValidationError extends Error {
-  constructor(message) {
-    super(message);
-    this.name = 'CardValidationError';
-    this.statusCode = ERRORS.UNCORRECT;
-  }
-}
+// class CardValidationError extends Error {
+//   constructor(message) {
+//     super(message);
+//     this.name = 'CardValidationError';
+//     this.statusCode = ERRORS.UNCORRECT;
+//   }
+// }
 
-class AuthError extends Error {
-  constructor(message) {
-    super(message);
-    this.name = 'AuthError';
-    this.statusCode = ERRORS.FORBIDDEN;
-  }
-}
-
-class ServerError extends Error {
-  constructor(message) {
-    super(message);
-    this.name = 'ServerError';
-    this.statusCode = ERRORS.SERVER_ERR;
-  }
-}
-
-const validation = (err, message = err.message) => {
-  switch (err.name) {
-    case 'ValidationError':
-      return new CardValidationError(message);
-    case 'CastError':
-      return err.code === 404
-        ? new CardCastError(message)
-        : new CardValidationError(message);
-    default:
-      return new ServerError(err.message);
-  }
-};
+// const validation = (err, message = err.message) => {
+//   switch (err.name) {
+//     case 'ValidationError':
+//       return new CardValidationError(message);
+//     case 'CastError':
+//       return err.code === 404
+//         ? new CardCastError(message)
+//         : new CardValidationError(message);
+//     default:
+//       return new Error(err.message);
+//   }
+// };
 
 module.exports.createCard = (req, res, next) => {
   const { name, link } = req.body;
   Card
     .create({ name, link, owner: req.user._id })
     .then((card) => {
-      if (!card) next(new CardCastError(MESSAGES.cardNotFound));
+      if (!card) throw new CardCastError(MESSAGES.cardNotFound);
       res.send(formatCardData(card));
     })
-    .catch((err) => next(validation(err, MESSAGES.errorCardCreate)));
+    // .catch((err) => next(validation(err, MESSAGES.errorCardCreate)));
+    .catch(next);
 };
 
 module.exports.deleteCard = (req, res, next) => {
@@ -73,7 +59,8 @@ module.exports.deleteCard = (req, res, next) => {
     .then((card) => {
       res.send(card);
     })
-    .catch((err) => next(validation(err, MESSAGES.cardNotFound)));
+    // .catch((err) => next(validation(err, MESSAGES.cardNotFound)));
+    .catch(next);
 };
 
 module.exports.setLike = (req, res, next) => {
@@ -84,10 +71,11 @@ module.exports.setLike = (req, res, next) => {
       { new: true },
     )
     .then((card) => {
-      if (!card) next(new CardCastError(MESSAGES.cardNotFound));
+      if (!card) throw new CardCastError(MESSAGES.cardNotFound);
       res.send(formatCardData(card));
     })
-    .catch((err) => next(validation(err, MESSAGES.errorSetLike)));
+    .catch(next);
+  // .catch((err) => next(validation(err, MESSAGES.errorSetLike)));
 };
 
 module.exports.deleteLike = (req, res, next) => {
@@ -98,38 +86,40 @@ module.exports.deleteLike = (req, res, next) => {
       { new: true },
     )
     .then((card) => {
-      if (!card) next(new CardCastError(MESSAGES.cardNotFound));
+      if (!card) throw new CardCastError(MESSAGES.cardNotFound);
       res.send(formatCardData(card));
     })
-    .catch((err) => next(validation(err, MESSAGES.errorRemoveLike)));
+    .catch(next);
+  // .catch((err) => next(validation(err, MESSAGES.errorRemoveLike)));
 };
 
 module.exports.getCards = (req, res, next) => {
   Card
     .find({})
     .then((cards) => {
-      if (!cards) next(new CardCastError(MESSAGES.cardNotFound));
+      if (!cards) throw new CardCastError(MESSAGES.cardNotFound);
       res.send(cards.map(formatCardData));
     })
-    .catch((err) => next(validation(err, MESSAGES.cardNotFound)));
+    .catch(next);
+  // .catch((err) => next(validation(err, MESSAGES.cardNotFound)));
 };
 
 module.exports.getCard = (req, res, next) => {
   Card
     .findById(req.params.cardId)
-    .then((card) => {
-      res.send(formatCardData(card));
-    })
-    .catch((err) => next(validation(err, MESSAGES.cardNotFound)));
+    .then((card) => res.send(formatCardData(card)))
+    .catch(next);
+  // .catch((err) => next(validation(err, MESSAGES.cardNotFound)));
 };
 
 module.exports.checkOwner = (req, res, next) => {
   Card
     .findById(req.params.cardId)
     .then((card) => {
-      if (!card) next(new CardCastError(MESSAGES.cardNotFound));
-      if (req.user._id !== card.owner.toString()) next(new AuthError(MESSAGES.needAuth));
+      if (!card) throw new CardCastError(MESSAGES.cardNotFound);
+      if (req.user._id !== card.owner.toString()) next(new CardAuthError(MESSAGES.needAuth));
       next();
     })
-    .catch((err) => next(validation(err, MESSAGES.cardNotFound)));
+    .catch(next);
+  // .catch((err) => next(validation(err, MESSAGES.cardNotFound)));
 };
