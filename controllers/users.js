@@ -10,23 +10,6 @@ const formatUserData = ({
   name, about, avatar, email, _id,
 });
 
-// const validation = (err, message = err.message) => {
-//   switch (err.name) {
-//     case 'ValidationError':
-//       return new UserValidationError(message);
-//     case 'CastError':
-//       return err.code === 404
-//         ? new UserCastError(message)
-//         : new UserValidationError(message);
-//     case 'MongoServerError':
-//       return new ConflictError(MESSAGES.alreadyExist);
-//     case 'TypeError':
-//       return new AuthError(message);
-//     default:
-//       return new Error(message);
-//   }
-// };
-
 module.exports.getUsers = (req, res, next) => {
   User
     .find({})
@@ -35,7 +18,6 @@ module.exports.getUsers = (req, res, next) => {
       res.send(users.map(formatUserData));
     })
     .catch(next);
-  // .catch((err) => next(validation(err, MESSAGES.userNotFound)));
 };
 
 module.exports.createUser = (req, res, next) => {
@@ -45,24 +27,18 @@ module.exports.createUser = (req, res, next) => {
   bcrypt
     .hash(password, 10)
     .then((hash) => {
-      User
-        .init()
-        .then(() => {
-          try {
-            return User.create({
-              name, about, avatar, email, password: hash,
-            });
-          } catch (err) { next(err); }
-          return next();
-          // { return next(validation(err, MESSAGES.errorUserCreate)); }
-        })
-        .then((user) => {
-          if (!user) throw new UserCastError(MESSAGES.userNotFound);
-          return res.send(formatUserData(user));
-        })
-        .catch(next);
-      // .catch((err) => next(validation(err, MESSAGES.errorUserCreate)));
-    });
+      try {
+        return User.create({
+          name, about, avatar, email, password: hash,
+        });
+      } catch (err) { next(err); }
+      return next();
+    })
+    .then((user) => {
+      if (!user) throw new UserCastError(MESSAGES.errorUserCreate);
+      return res.send(formatUserData(user));
+    })
+    .catch(next);
 };
 
 module.exports.updateProfile = (req, res, next) => {
@@ -78,7 +54,6 @@ module.exports.updateProfile = (req, res, next) => {
       res.send(formatUserData(user));
     })
     .catch(next);
-  // .catch((err) => next(validation(err, MESSAGES.errorProfileUpdate)));
 };
 
 module.exports.updateAvatar = (req, res, next) => {
@@ -94,7 +69,6 @@ module.exports.updateAvatar = (req, res, next) => {
       res.send(formatUserData(user));
     })
     .catch(next);
-  // .catch((err) => next(validation(err, MESSAGES.errorAvatarUpdate)));
 };
 
 module.exports.login = (req, res, next) => {
@@ -109,7 +83,6 @@ module.exports.login = (req, res, next) => {
         .send(formatUserData(user)).end();
     })
     .catch(next);
-  // .catch((err) => next(validation(err, MESSAGES.wrongUserData)));
 };
 
 module.exports.getProfile = (req, res, next) => {
@@ -120,7 +93,6 @@ module.exports.getProfile = (req, res, next) => {
       res.send(formatUserData(user));
     })
     .catch(next);
-  // .catch((err) => next(validation(err, MESSAGES.userNotFound)));
 };
 
 module.exports.getUser = (req, res, next) => {
@@ -130,6 +102,5 @@ module.exports.getUser = (req, res, next) => {
       if (!user) throw new UserCastError(MESSAGES.userNotFound);
       res.send(formatUserData(user));
     })
-    // .catch((err) => next(validation(err, MESSAGES.userNotFound)));
     .catch(next);
 };

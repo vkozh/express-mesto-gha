@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const { MESSAGES } = require('../utils/constants');
 
 const cardSchema = new mongoose.Schema({
   name: {
@@ -10,7 +9,7 @@ const cardSchema = new mongoose.Schema({
   },
   link: {
     type: String,
-    match: [/https?:\/\/(w{3}\.)?\S+\.\w+(\/\S+)*#?/, MESSAGES.invalidURL],
+    match: /https?:\/\/(w{3}\.)?\S+\.\w+(\/\S+)*#?/,
     required: true,
   },
   owner: {

@@ -1,4 +1,4 @@
-/* eslint max-classes-per-file: ['error', 7] */
+/* eslint max-classes-per-file: ['error', 8] */
 
 const { ERRORS } = require('../utils/constants');
 
@@ -10,15 +10,23 @@ class AuthValidationError extends Error {
   }
 }
 
-class UserCastError extends Error {
+// class UserCastError extends Error {
+//   constructor(message) {
+//     super(message);
+//     this.name = 'UserCastError';
+//     this.statusCode = ERRORS.NOT_FOUND;
+//   }
+// }
+
+class CustomCastError extends Error {
   constructor(message) {
     super(message);
-    this.name = 'UserCastError';
+    this.name = 'CustomCastError';
     this.statusCode = ERRORS.NOT_FOUND;
   }
 }
 
-class UserValidationError extends Error {
+class CustomValidationError extends Error {
   constructor(message) {
     super(message);
     this.name = 'UserValidationError';
@@ -26,13 +34,13 @@ class UserValidationError extends Error {
   }
 }
 
-class CardValidationError extends Error {
-  constructor(message) {
-    super(message);
-    this.name = 'CardValidationError';
-    this.statusCode = ERRORS.UNCORRECT;
-  }
-}
+// class CardValidationError extends Error {
+//   constructor(message) {
+//     super(message);
+//     this.name = 'CardValidationError';
+//     this.statusCode = ERRORS.UNCORRECT;
+//   }
+// }
 
 class ConflictError extends Error {
   constructor(message) {
@@ -61,9 +69,8 @@ class CardAuthError extends Error {
 module.exports = {
   CardAuthError,
   AuthError,
-  UserCastError,
+  CustomCastError,
   ConflictError,
-  CardValidationError,
-  UserValidationError,
+  CustomValidationError,
   AuthValidationError,
 };

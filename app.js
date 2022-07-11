@@ -2,11 +2,9 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
+const { celebrate, Joi, errors } = require('celebrate');
 const {
-  celebrate, Joi, errors,
-} = require('celebrate');
-const {
-  UserCastError, UserValidationError, ConflictError, AuthError,
+  CustomCastError, CustomValidationError, ConflictError, AuthError,
 } = require('./classes/errors');
 const { login, createUser } = require('./controllers/users');
 const auth = require('./middlewares/auth');
@@ -16,13 +14,14 @@ const { PORT = 3000 } = process.env;
 const app = express();
 
 const validation = (err, message = err.message) => {
+  console.log(err);
   switch (err.name) {
     case 'ValidationError':
-      return new UserValidationError(message);
+      return new CustomValidationError(message);
     case 'CastError':
       return err.code === 404
-        ? new UserCastError(message)
-        : new UserValidationError(message);
+        ? new CustomCastError(MESSAGES.uncorrectData)
+        : new CustomValidationError(message);
     case 'MongoServerError':
       return new ConflictError(MESSAGES.alreadyExist);
     case 'TypeError':
@@ -61,7 +60,6 @@ app.post('/signup', celebrate(
 app.use('/users', auth, require('./routes/users'));
 app.use('/cards', auth, require('./routes/cards'));
 
-// app.use((req, res) => res.status(404).send({ message: MESSAGES.wrongPath }));
 app.use((req, res, next) => {
   const err = new Error(MESSAGES.wrongPath);
   err.statusCode = ERRORS.NOT_FOUND;
@@ -71,9 +69,12 @@ app.use(errors());
 app.use((err, req, res, next) => {
   let { statusCode, message } = err;
   if (!statusCode) {
+    console.log('not statusCode________________');
     const customErr = validation(err);
     statusCode = customErr.statusCode;
     message = customErr.message;
+    console.log('statusCode', statusCode);
+    console.log('message', customErr.message);
   }
 
   res.status(statusCode).send({ message });
