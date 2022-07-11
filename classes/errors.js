@@ -10,23 +10,15 @@ class AuthValidationError extends Error {
   }
 }
 
-// class UserCastError extends Error {
-//   constructor(message) {
-//     super(message);
-//     this.name = 'UserCastError';
-//     this.statusCode = ERRORS.NOT_FOUND;
-//   }
-// }
-
 class CustomCastError extends Error {
   constructor(message) {
     super(message);
-    this.name = 'CustomCastError';
+    this.name = 'CardCastError';
     this.statusCode = ERRORS.NOT_FOUND;
   }
 }
 
-class CustomValidationError extends Error {
+class UserValidationError extends Error {
   constructor(message) {
     super(message);
     this.name = 'UserValidationError';
@@ -34,13 +26,13 @@ class CustomValidationError extends Error {
   }
 }
 
-// class CardValidationError extends Error {
-//   constructor(message) {
-//     super(message);
-//     this.name = 'CardValidationError';
-//     this.statusCode = ERRORS.UNCORRECT;
-//   }
-// }
+class CustomValidationError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'CardValidationError';
+    this.statusCode = ERRORS.UNCORRECT;
+  }
+}
 
 class ConflictError extends Error {
   constructor(message) {
@@ -71,6 +63,7 @@ module.exports = {
   AuthError,
   CustomCastError,
   ConflictError,
+  UserValidationError,
   CustomValidationError,
   AuthValidationError,
 };

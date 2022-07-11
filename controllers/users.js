@@ -1,5 +1,5 @@
 const bcrypt = require('bcryptjs');
-const { UserCastError } = require('../classes/errors');
+const { CustomCastError } = require('../classes/errors');
 const { createToken } = require('../helpers/jwt');
 const User = require('../models/user');
 const { MESSAGES } = require('../utils/constants');
@@ -14,7 +14,7 @@ module.exports.getUsers = (req, res, next) => {
   User
     .find({})
     .then((users) => {
-      if (!users) throw new UserCastError(MESSAGES.userNotFound);
+      if (!users) throw new CustomCastError(MESSAGES.userNotFound);
       res.send(users.map(formatUserData));
     })
     .catch(next);
@@ -35,7 +35,7 @@ module.exports.createUser = (req, res, next) => {
       return next();
     })
     .then((user) => {
-      if (!user) throw new UserCastError(MESSAGES.errorUserCreate);
+      if (!user) throw new CustomCastError(MESSAGES.errorUserCreate);
       return res.send(formatUserData(user));
     })
     .catch(next);
@@ -50,7 +50,7 @@ module.exports.updateProfile = (req, res, next) => {
       { new: true, runValidators: true },
     )
     .then((user) => {
-      if (!user) throw new UserCastError(MESSAGES.userNotFound);
+      if (!user) throw new CustomCastError(MESSAGES.userNotFound);
       res.send(formatUserData(user));
     })
     .catch(next);
@@ -65,7 +65,7 @@ module.exports.updateAvatar = (req, res, next) => {
       { new: true, runValidators: true },
     )
     .then((user) => {
-      if (!user) throw new UserCastError(MESSAGES.userNotFound);
+      if (!user) throw new CustomCastError(MESSAGES.userNotFound);
       res.send(formatUserData(user));
     })
     .catch(next);
@@ -76,7 +76,7 @@ module.exports.login = (req, res, next) => {
   User
     .findByCredentials(email, password)
     .then((user) => {
-      if (!user) throw new UserCastError(MESSAGES.userNotFound);
+      if (!user) throw new CustomCastError(MESSAGES.userNotFound);
       const token = createToken({ _id: user._id });
       res
         .cookie('jwt', token, { maxAge: 3600000 * 24 * 7, httpOnly: true })
@@ -89,7 +89,7 @@ module.exports.getProfile = (req, res, next) => {
   User
     .findById(req.user._id)
     .then((user) => {
-      if (!user) throw new UserCastError(MESSAGES.userNotFound);
+      if (!user) throw new CustomCastError(MESSAGES.userNotFound);
       res.send(formatUserData(user));
     })
     .catch(next);
@@ -99,7 +99,7 @@ module.exports.getUser = (req, res, next) => {
   User
     .findById(req.params.userId)
     .then((user) => {
-      if (!user) throw new UserCastError(MESSAGES.userNotFound);
+      if (!user) throw new CustomCastError(MESSAGES.userNotFound);
       res.send(formatUserData(user));
     })
     .catch(next);

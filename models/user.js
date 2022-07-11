@@ -1,15 +1,8 @@
 const mongoose = require('mongoose');
 const valid = require('validator');
 const bcrypt = require('bcryptjs');
-const { MESSAGES, ERRORS } = require('../utils/constants');
-
-class UserValidationError extends Error {
-  constructor(message) {
-    super(message);
-    this.name = 'UserValidationError';
-    this.statusCode = ERRORS.UNCORRECT;
-  }
-}
+const { MESSAGES } = require('../utils/constants');
+const { UserValidationError } = require('../classes/errors');
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -26,7 +19,7 @@ const userSchema = new mongoose.Schema({
   },
   avatar: {
     type: String,
-    match: [/https?:\/\/(w{3}\.)?\S+\.\w+(\/\S+)*#?/, MESSAGES.invalidURL],
+    match: /https?:\/\/(w{3}\.)?\S+\.\w+(\/\S+)*#?/,
     default: 'https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png',
   },
   email: {

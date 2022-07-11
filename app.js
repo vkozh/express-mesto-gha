@@ -14,7 +14,6 @@ const { PORT = 3000 } = process.env;
 const app = express();
 
 const validation = (err, message = err.message) => {
-  console.log(err);
   switch (err.name) {
     case 'ValidationError':
       return new CustomValidationError(message);
@@ -69,12 +68,9 @@ app.use(errors());
 app.use((err, req, res, next) => {
   let { statusCode, message } = err;
   if (!statusCode) {
-    console.log('not statusCode________________');
     const customErr = validation(err);
     statusCode = customErr.statusCode;
     message = customErr.message;
-    console.log('statusCode', statusCode);
-    console.log('message', customErr.message);
   }
 
   res.status(statusCode).send({ message });

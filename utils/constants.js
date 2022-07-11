@@ -10,7 +10,7 @@ module.exports.ERRORS = {
 module.exports.MESSAGES = {
   userNotFound: 'Пользователь с указанным _id не найден.',
   cardNotFound: 'Карточка с указанным _id не найдена.',
-  // errorUserCreate: 'Переданы некорректные данные при создании пользователя.',
+  errorUserCreate: 'Переданы некорректные данные при создании пользователя.',
   errorCardData: 'Переданы некорректные данные при создании карточки.',
   emailUncorrect: 'Некорректный email.',
   uncorrectData: 'Переданы некорректные данные.',

@@ -9,7 +9,6 @@ const {
   getCard,
   checkOwner,
 } = require('../controllers/cards');
-// const { ERRORS } = require('../utils/constants');
 
 const validCardId = {
   params: Joi.object().keys({
