@@ -13,19 +13,6 @@ const formatCardData = ({
   owner,
 });
 
-// const validation = (err, message = err.message) => {
-//   switch (err.name) {
-//     case 'ValidationError':
-//       return new CardValidationError(message);
-//     case 'CastError':
-//       return err.code === 404
-//         ? new CustomCastError(message)
-//         : new CardValidationError(message);
-//     default:
-//       return new Error(err.message);
-//   }
-// };
-
 module.exports.createCard = (req, res, next) => {
   const { name, link } = req.body;
   Card
