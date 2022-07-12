@@ -12,7 +12,7 @@ const {
 
 const validCardId = {
   params: Joi.object().keys({
-    cardId: Joi.string().pattern(/^[a-f\d]{24}$/i),
+    cardId: Joi.string().hex(),//.pattern(/^[a-f\d]{24}$/i),
   }),
 };
 

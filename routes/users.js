@@ -10,7 +10,7 @@ const {
 
 const validUserId = {
   params: Joi.object().keys({
-    userId: Joi.string().pattern(/^[a-f\d]{24}$/i),
+    userId: Joi.string().hex(),
   }),
 };
 
