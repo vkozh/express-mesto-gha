@@ -1,4 +1,4 @@
-const express = require('express');
+// const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
@@ -10,8 +10,8 @@ const { login, createUser } = require('./controllers/users');
 const auth = require('./middlewares/auth');
 const { MESSAGES, ERRORS } = require('./utils/constants');
 
-const { PORT = 3000 } = process.env;
-const app = express();
+// const { PORT = 3000 } = process.env;
+// const app = express();
 
 const validation = (err, message = err.message) => {
   switch (err.name) {
@@ -77,6 +77,6 @@ app.use((err, req, res, next) => {
   next();
 });
 
-app.listen(PORT, () => {
-  console.log(`App listening on port ${PORT}`);
-});
+// app.listen(PORT, () => {
+//   console.log(`App listening on port ${PORT}`);
+// });
