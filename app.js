@@ -1,4 +1,4 @@
-// const express = require('express');
+const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
@@ -7,11 +7,12 @@ const {
   CustomCastError, CustomValidationError, ConflictError, AuthError,
 } = require('./classes/errors');
 const { login, createUser } = require('./controllers/users');
-const auth = require('./middlewares/auth');
 const { MESSAGES, ERRORS } = require('./utils/constants');
+const auth = require('./middlewares/auth');
+const { requestLogger, errorLogger } = require('./middlewares/logger');
 
 // const { PORT = 3000 } = process.env;
-// const app = express();
+const app = express();
 
 const validation = (err, message = err.message) => {
   switch (err.name) {
@@ -35,6 +36,7 @@ mongoose.connect('mongodb://localhost:27017/mestodb');
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
+app.use(requestLogger);
 // app.use('/', auth, (req, res, next) => next());
 
 app.post('/signin', celebrate({
@@ -64,6 +66,7 @@ app.use((req, res, next) => {
   err.statusCode = ERRORS.NOT_FOUND;
   next(err);
 });
+app.use(errorLogger);
 app.use(errors());
 app.use((err, req, res, next) => {
   let { statusCode, message } = err;
@@ -80,3 +83,5 @@ app.use((err, req, res, next) => {
 // app.listen(PORT, () => {
 //   console.log(`App listening on port ${PORT}`);
 // });
+
+module.exports = app;
