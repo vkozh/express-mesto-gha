@@ -45,11 +45,11 @@ userSchema.statics.findByCredentials = function (email, password) {
     .findOne({ email })
     .select('+password')
     .then((user) => {
-      if (!user) Promise.reject(new UserValidationError(MESSAGES.wrongUserData));
+      if (!user) throw new UserValidationError(MESSAGES.wrongUserData);
       return bcrypt
         .compare(password, user.password)
         .then((matched) => {
-          if (!matched) Promise.reject(new UserValidationError(MESSAGES.wrongUserData));
+          if (!matched) throw new UserValidationError(MESSAGES.wrongUserData);
           return user;
         });
     });
