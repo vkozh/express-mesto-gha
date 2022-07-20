@@ -78,7 +78,6 @@ module.exports.login = (req, res, next) => {
     .then((user) => {
       if (!user) throw new CustomCastError(MESSAGES.userNotFound);
       const token = createToken({ _id: user._id });
-      // console.log('token', token)
       res
         .cookie('jwt', token, {
           maxAge: 3600000 * 24 * 7, httpOnly: true, sameSite: 'none', secure: true,
