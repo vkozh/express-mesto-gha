@@ -10,7 +10,7 @@ const { login, createUser, logout } = require('./controllers/users');
 const { MESSAGES, ERRORS } = require('./utils/constants');
 const auth = require('./middlewares/auth');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
-const cors = require('./middlewares/cors');
+// const cors = require('./middlewares/cors');
 require('dotenv').config();
 
 const app = express();
@@ -33,8 +33,31 @@ const validation = (err, message = err.message) => {
 };
 
 mongoose.connect('mongodb://localhost:27017/mestodb');
+const allowedCors = [
+  'https://lekozhe-mesto.nomoredomains.xyz',
+  'http://localhost:3000',
+  'http://lekozhe-mesto.nomoredomains.xyz',
+  'https://express-mesto-gha.github.io',
+];
+app.use('*', (req, res, next) => {
+  const { origin } = req.headers;
+  const { method } = req;
+  const DEFAULT_ALLOWED_METHODS = 'GET,HEAD,PUT,PATCH,POST,DELETE';
+  const requestHeaders = req.headers['access-control-request-headers'];
 
-app.use('*', cors);
+  if (allowedCors.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+    res.header('Access-Control-Allow-Credentials', 'true');
+  }
+
+  if (method === 'OPTIONS') {
+    res.header('Access-Control-Allow-Methods', DEFAULT_ALLOWED_METHODS);
+    res.header('Access-Control-Allow-Headers', requestHeaders);
+    return res.end();
+  }
+
+  return next();
+});
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(cookieParser());
