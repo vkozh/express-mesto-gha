@@ -5,7 +5,7 @@ const allowedCors = [
   'https://express-mesto-gha.github.io',
 ];
 
-module.exports = (req, res, next) => {
+const cors = (req, res, next) => {
   const { origin } = req.headers;
   const { method } = req;
   const DEFAULT_ALLOWED_METHODS = 'GET,HEAD,PUT,PATCH,POST,DELETE';
@@ -24,3 +24,5 @@ module.exports = (req, res, next) => {
 
   return next();
 };
+
+module.exports = { cors };
